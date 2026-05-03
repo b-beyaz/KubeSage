@@ -1,0 +1,11 @@
+streamlit
+python-dotenv
+langchain
+langchain-community
+langchain-core
+langchain-anthropic
+langchain-text-splitters
+langchain-ollama
+chromadb
+beautifulsoup4
+requests

@@ -39,7 +39,7 @@ if process_btn and url:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=5000, chunk_overlap=150)
         docs = text_splitter.split_documents(data)
         
-        embeddings = OllamaEmbeddings(model="nomic-embed-text")
+        embeddings = OllamaEmbeddings(model="nomic-embed-text",base_url="http://ollama:11434")
         st.session_state.vector_db = Chroma.from_documents(docs, embeddings)
         st.success("Doküman vektör veritabanına eklendi!")
 
