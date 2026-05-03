@@ -10,10 +10,16 @@ Framework: Built with LangChain (0.3+) and Streamlit.
 
 Quick Start
 1-Clone & Install
+'''
 git clone https://github.com/b-beyaz/KubeSage.git
+'''
 2-Configure Environment
 Create a .env file in the root directory:
+'''
 ANTHROPIC_API_KEY=your_key_here
 CLAUDE_MODEL_NAME=claude-sonnet-4-20250514
+'''
 3-Launch App
+'''
 streamlit run main.py 
+'''
