@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  streamlit-app:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CLAUDE_MODEL_NAME=${MODEL_NAME}
+      - OLLAMA_HOST=http://ollama:11434   
+    depends_on:
+      ollama-init:
+        condition: service_completed_successfully 
+
+  ollama:
+    image: ollama/ollama  
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  ollama-init:
+    image: ollama/ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434   
+    entrypoint: >
+      sh -c "ollama pull nomic-embed-text"  # ← removed redundant sleep
+    restart: "no"
+
+volumes:
+  ollama_data:
