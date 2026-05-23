@@ -59,7 +59,7 @@ jobs:
         run: |
           git config --global user.email "ci@github.com"
           git config --global user.name "GitHub Actions"
-          git clone https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/b-beyaz/git-ops.git
+          git clone https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com:b-beyaz/gitops-repo.git
           cd git-ops
           sed -i "s|aysebeyaz/kubesage:.*|aysebeyaz/kubesage:${{ steps.meta.outputs.SHORT_SHA }}|g" dev/deployment.yaml
           git add dev/deployment.yaml
