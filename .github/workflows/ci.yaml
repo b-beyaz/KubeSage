@@ -2,9 +2,9 @@ name: CI/CD â React.js Application with Docker
 
 on:
   push:
-    branches: [main]
+    branches: [main,dockerize-app]
   pull_request:
-    branches: [main]
+    branches: [main,dockerize-app]
     types: [opened, synchronize, reopened]
 
 jobs:
