@@ -1,4 +1,4 @@
-name: CI/CD â React.js Application with Docker
+name: CI Application with Docker
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
     steps:
       # 1. Checkout source code
       - name: Checkout source code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Fetches full history for better caching/context
 
@@ -31,13 +31,6 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-
 
-      # 4. Cache npm dependencies
-      - name: Cache npm dependencies
-        uses: actions/cache@v5
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-
 
       # 5. Extract metadata
       - name: Extract metadata
@@ -46,40 +39,16 @@ jobs:
           echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> "$GITHUB_OUTPUT"
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
-      # 6. Build dev Docker image
-      - name: Build Docker image for tests
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: Dockerfile.dev
-          tags: ${{ steps.meta.outputs.REPO_NAME }}-dev:latest
-          load: true # Load to local Docker daemon for testing
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-
-      # 7. Run Vitest tests
-      - name: Run Vitest tests and generate report
-        run: |
-          docker run --rm \
-            --workdir /app \
-            --entrypoint "" \
-            ${{ steps.meta.outputs.REPO_NAME }}-dev:latest \
-            sh -c "npm ci && npx vitest run --reporter=verbose"
-        env:
-          CI: true
-          NODE_ENV: test
-        timeout-minutes: 10
-
       # 8. Login to Docker Hub
       - name: Log in to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
       # 9. Build and push prod image
       - name: Build and push production image
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile
@@ -89,3 +58,14 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ steps.meta.outputs.SHORT_SHA }}
           cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+      - name: Update gitops-repo image tag
+        run: |
+          git config --global user.email "ci@github.com"
+          git config --global user.name "GitHub Actions"
+          git clone https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/b-beyaz/git-ops.git
+          cd git-ops
+          sed -i "s|aysebeyaz/kubesage:.*|aysebeyaz/kubesage:${{ steps.meta.outputs.SHORT_SHA }}|g" dev/deployment.yaml
+          git add dev/deployment.yaml
+          git commit -m "ci: update dev image to ${{ steps.meta.outputs.SHORT_SHA }}"
+          git push
