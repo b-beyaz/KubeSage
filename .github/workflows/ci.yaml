@@ -2,9 +2,9 @@ name: CI Application with Docker
 
 on:
   push:
-    branches: [dockerize-app]
+    branches: ['dockerize-app']
   pull_request:
-    branches: [dockerize-app]
+    branches: ['dockerize-app']
     types: [opened, synchronize, reopened]
 
 jobs:
