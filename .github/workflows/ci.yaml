@@ -53,14 +53,14 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_PROJECT_NAME }}:${{ steps.meta.outputs.SHORT_SHA }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Update gitops-repo image tag
         run: |
           git config --global user.email "ci@github.com"
           git config --global user.name "GitHub Actions"
-          git clone https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com:b-beyaz/gitops-repo.git
-          cd git-ops
+          git clone https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/b-beyaz/gitops-repo.git
+          cd gitops-repo
           sed -i "s|aysebeyaz/kubesage:.*|aysebeyaz/kubesage:${{ steps.meta.outputs.SHORT_SHA }}|g" dev/deployment.yaml
           git add dev/deployment.yaml
           git commit -m "ci: update dev image to ${{ steps.meta.outputs.SHORT_SHA }}"
